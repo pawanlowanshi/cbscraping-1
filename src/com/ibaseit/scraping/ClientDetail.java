@@ -17,46 +17,50 @@ import org.apache.poi.xssf.usermodel.XSSFSheet;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 
 public class ClientDetail {
-    public static List<Map<String, String>> clientInfo = new ArrayList<Map<String, String>>();
-    public static Map<String, Object> metaInfo = new HashMap<String, Object>();
+	public static List<Map<String, String>> clientInfo = new ArrayList<Map<String, String>>();
+	public static Map<String, Object> metaInfo = new HashMap<String, Object>();
 
-    public static void main(String[] args) throws Exception  {
-	
-	extractGetWay();
+	public static void main(String[] args) throws Exception {
 
-	executeGetWay();
-    }
+		extractGetWay();
 
-    private static void executeGetWay() throws Exception {
-	// TODO Auto-generated method stub
-	for (Map<String, String> currentClientInfo : clientInfo) {
-	    HttpContext httpContext = new BasicHttpContext();
-		httpContext.setAttribute(HttpClientContext.COOKIE_STORE,
-			new BasicCookieStore());
-	    for (HttpStep httpStep : (List<HttpStep>) metaInfo.get(currentClientInfo.get("Getway"))) {
-		httpStep.execute(currentClientInfo,httpContext);
-	    }
+		executeGetWay();
 	}
-	
-    }
 
-    private static void extractGetWay() throws FileNotFoundException,IOException {
-	XSSFWorkbook wb = new XSSFWorkbook(new FileInputStream(new File("src\\conf\\ChargeBackMetadata.xlsx")));
-	XSSFSheet sheet = wb.getSheet("ClientDetails");
-
-	for (int rowIndex = 1; rowIndex <= sheet.getLastRowNum(); rowIndex++) {
-	    Map<String, String> currentClientInfo = new HashMap<String, String>();
-	    clientInfo.add(currentClientInfo);
-	    for (int colIndex = 0; colIndex <= sheet.getRow(rowIndex).getLastCellNum() - 1; colIndex++)
-		currentClientInfo.put(ExcelUtils.asString(sheet, 0, colIndex),
-			ExcelUtils.asString(sheet, rowIndex, colIndex));
-
-	    HttpTemplate httpTemplate = new HttpTemplate(wb,currentClientInfo.get("Getway"));
-
-	    metaInfo.put(currentClientInfo.get("Getway"),httpTemplate.allSteps);
+	static void executeGetWay() throws Exception {
+		// TODO Auto-generated method stub
+		for (Map<String, String> currentClientInfo : clientInfo) {
+			HttpContext httpContext = new BasicHttpContext();
+			httpContext.setAttribute(HttpClientContext.COOKIE_STORE,
+					new BasicCookieStore());
+			for (HttpStep httpStep : (List<HttpStep>) metaInfo.get(currentClientInfo
+					.get("Getway"))) {
+				httpStep.execute(currentClientInfo, httpContext);
+			}
+		}
 
 	}
-	System.out.println(clientInfo);
-	System.out.println(metaInfo);
-    }
+
+	static void extractGetWay() throws FileNotFoundException, IOException {
+		XSSFWorkbook wb = new XSSFWorkbook(new FileInputStream(new File(
+				"src\\conf\\ChargeBackMetadata.xlsx")));
+		XSSFSheet sheet = wb.getSheet("ClientDetails");
+
+		for (int rowIndex = 1; rowIndex <= sheet.getLastRowNum(); rowIndex++) {
+			Map<String, String> currentClientInfo = new HashMap<String, String>();
+			clientInfo.add(currentClientInfo);
+			for (int colIndex = 0; colIndex <= sheet.getRow(rowIndex)
+					.getLastCellNum() - 1; colIndex++)
+				currentClientInfo.put(ExcelUtils.asString(sheet, 0, colIndex),
+						ExcelUtils.asString(sheet, rowIndex, colIndex));
+
+			HttpTemplate httpTemplate = new HttpTemplate(wb,
+					currentClientInfo.get("Getway"));
+
+			metaInfo.put(currentClientInfo.get("Getway"), httpTemplate.allSteps);
+
+		}
+		System.out.println(clientInfo);
+		System.out.println(metaInfo);
+	}
 }
