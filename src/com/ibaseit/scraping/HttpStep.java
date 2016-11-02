@@ -13,6 +13,10 @@ import org.apache.http.client.methods.HttpPost;
 import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.http.protocol.HttpContext;
 import org.apache.poi.xssf.usermodel.XSSFSheet;
+import org.jsoup.Jsoup;
+import org.jsoup.nodes.Element;
+
+import com.ibaseit.scraping.utils.ExcelUtils;
 
 public class HttpStep {
 
@@ -24,6 +28,7 @@ public class HttpStep {
 	private Map<String, String> reqParam;
 	private Map<String, String> reqHeader;
 	private String resProcessHandler;
+	private Map<String, String> resParam;
 
 	static int rowNo;
 
@@ -35,6 +40,21 @@ public class HttpStep {
 		this.reqHeader = extractReqHeader(sheet, ++rowNo);
 		this.reqParam = extractReqParam(sheet, ++rowNo);
 		this.resProcessHandler = ExcelUtils.asString(sheet, ++rowNo, 1);
+		this.resParam = extractResParam(sheet, ++rowNo);
+	}
+
+	private Map<String, String> extractResParam(XSSFSheet sheet, int rowNum) {
+		Map<String, String> resParam = new HashMap<String, String>();
+		for (int rowCnt = rowNum; rowCnt <= sheet.getLastRowNum(); rowCnt++) {
+			if ("".equals(ExcelUtils.asString(sheet, rowCnt, 0)))
+				break;
+			else
+				resParam.put(ExcelUtils.asString(sheet, rowCnt, 0),
+						ExcelUtils.asString(sheet, rowCnt, 1));
+			++rowNo;
+		}
+
+		return resParam;
 	}
 
 	private Map<String, String> extractReqParam(XSSFSheet sheet, int rowNum) {
@@ -68,7 +88,7 @@ public class HttpStep {
 
 	static String page = "";
 
-	public void execute(Map<String, String> currentClientInfo,
+	public void execute(Map<String, Object> currentClientInfo,
 			HttpContext httpContext) throws Exception {
 		/*
 		 * HttpContext httpContext = new BasicHttpContext();
@@ -83,6 +103,23 @@ public class HttpStep {
 			HttpResponse response = client.execute(request, httpContext);
 			page = new ResProcHandler().handleResponse(response,
 					this.getResProcessHandler(), currentClientInfo);
+
+			for (Map.Entry<String, String> resPar : resParam.entrySet()) {
+
+				for (Element element : Jsoup.parse(page).getElementsByTag("form")) {
+					for (Element inputElement : element.getElementsByTag("input")) {
+						String key = inputElement.attr("name");
+						String value = inputElement.attr("value");
+
+						if (key.equals(resPar.getKey())) {
+
+							currentClientInfo.put(key, value);
+							break;
+						}
+					}
+				}
+
+			}
 		} else if ("POST".equalsIgnoreCase(this.getMethod())) {
 
 			formParams = new FormData().getFormParams(page, this, currentClientInfo);
@@ -121,4 +158,9 @@ public class HttpStep {
 	public String getResProcessHandler() {
 		return resProcessHandler;
 	}
+
+	public Map<String, String> getResParam() {
+		return resParam;
+	}
+
 }

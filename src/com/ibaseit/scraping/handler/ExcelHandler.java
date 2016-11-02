@@ -8,16 +8,19 @@ import java.util.Map;
 
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
+import org.apache.http.protocol.HttpContext;
+
+import com.ibaseit.scraping.ResponseHandler;
 
 public class ExcelHandler implements ResponseHandler {
 
 	@Override
 	public String handleResponse(HttpResponse response,
-			Map<String, String> currentClientInfo) throws IllegalStateException,
+			Map<String, Object> currentClientInfo) throws IllegalStateException,
 			IOException {
 
 		System.out.println("hello Response for ExcelHndler");
-		String getWay = currentClientInfo.get("Getway");
+		String getWay = currentClientInfo.get("Getway").toString();
 
 		HttpEntity entity = response.getEntity();
 
