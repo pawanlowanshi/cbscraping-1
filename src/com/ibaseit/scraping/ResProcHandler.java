@@ -5,14 +5,14 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.apache.http.HttpResponse;
+import org.apache.http.protocol.HttpContext;
 
-import com.ibaseit.scraping.handler.ResponseHandler;
 
 public class ResProcHandler {
     public Map<String, String> resHeaderInfo = new HashMap<String, String>();
 
     public String handleResponse(HttpResponse response, String className,
-	    Map<String, String> currentClientInfo) throws Exception {
+	    Map<String, Object> currentClientInfo) throws Exception {
 
 	ResponseHandler handler = (ResponseHandler) Class.forName(className).newInstance();
 	Method methodInstance = handler.getClass().getMethod("handleResponse", HttpResponse.class, Map.class);

@@ -1,4 +1,4 @@
-package com.ibaseit.scraping;
+package com.ibaseit.scraping.template;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -11,18 +11,18 @@ import org.apache.http.protocol.HttpContext;
 import org.apache.poi.xssf.usermodel.XSSFSheet;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 
+import com.ibaseit.scraping.HttpStep;
+import com.ibaseit.scraping.HttpTemplate;
 import com.ibaseit.scraping.utils.ExcelUtils;
 
-public class HttpTemplate {
+public class VimasHttpTemplate extends HttpTemplate {
 	String templateName;
 	List<HttpStep> allSteps = new ArrayList<HttpStep>();
 
-	public HttpTemplate() {
-	}
-
-	public HttpTemplate(XSSFWorkbook wb, String getWay) {
-		this.templateName = getWay;
-		XSSFSheet sheet = wb.getSheet(getWay);
+	public VimasHttpTemplate(XSSFWorkbook wb, String gateWay) {
+		super();
+		this.templateName = gateWay;
+		XSSFSheet sheet = wb.getSheet(gateWay);
 		System.out.println(sheet.getSheetName());
 		int rowIndex = 0;
 		int nullcnt = 0;
@@ -48,10 +48,24 @@ public class HttpTemplate {
 
 	public void execute(Map<String, Object> currentClientInfo) throws Exception {
 		HttpContext httpContext = new BasicHttpContext();
-		httpContext.setAttribute(HttpClientContext.COOKIE_STORE,new BasicCookieStore());
-
+		httpContext.setAttribute(HttpClientContext.COOKIE_STORE,
+				new BasicCookieStore());
+	
 		for (HttpStep httpStep : allSteps) {
-			httpStep.execute(currentClientInfo, httpContext);
+			int pageSize = 0;
+
+			do {
+				httpStep.execute(currentClientInfo, httpContext);
+				pageSize++;
+
+				System.out.println("pageSize =" + pageSize);
+				System.out.println("pageSize from VIMAS ="
+						+ currentClientInfo.get("SelectedPageCtrl"));
+				System.out.println("vimasHtmlData from VIMAS ="
+						+ currentClientInfo.get("vimasHtmlData"));
+
+			} while (templateName.equalsIgnoreCase("Charge Back Details") && (currentClientInfo.get("SelectedPageCtrl") != null && pageSize < Integer
+							.parseInt(currentClientInfo.get("SelectedPageCtrl").toString())));
 		}
 
 	}
